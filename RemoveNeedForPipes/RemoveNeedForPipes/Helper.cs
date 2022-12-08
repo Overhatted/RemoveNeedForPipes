@@ -1,8 +1,8 @@
-﻿using Harmony;
+﻿using CitiesHarmony.API;
+using HarmonyLib;
 using ICities;
 using System;
 using System.IO;
-using System.Reflection;
 using UnityEngine;
 
 namespace RemoveNeedForPipes
@@ -39,11 +39,27 @@ namespace RemoveNeedForPipes
         }
     }
 
-    public static class EmptyFunctionClass
+    public static class Patcher
     {
-        public static void EmptyFunction()
-        {
+        private const string HarmonyId = "Overhatted.RemoveNeedForPipes";
+        private static bool patched = false;
 
+        public static void PatchAll()
+        {
+            if (patched) return;
+
+            patched = true;
+            var harmony = new Harmony(HarmonyId);
+            harmony.PatchAll(typeof(Patcher).Assembly);
+        }
+
+        public static void UnpatchAll()
+        {
+            if (!patched) return;
+
+            var harmony = new Harmony(HarmonyId);
+            harmony.UnpatchAll(HarmonyId);
+            patched = false;
         }
     }
 
@@ -54,25 +70,14 @@ namespace RemoveNeedForPipes
 #if DEBUG
             Helper.PrintError("");
 #endif
+            if (HarmonyHelper.IsHarmonyInstalled) Patcher.PatchAll();
+
             WaterManagerMod.Init();
-
-            var harmony = HarmonyInstance.Create("com.overhatted.removeneedforpipes");
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
-
-            var postfix = typeof(EmptyFunctionClass).GetMethod(nameof(EmptyFunctionClass.EmptyFunction));
-
-            var original = typeof(WaterManager).GetMethod("TryFetchWater", new Type[] { typeof(Vector3), typeof(int), typeof(int), typeof(byte).MakeByRefType() });
-            var prefix = typeof(TryFetchWaterVector3Mod).GetMethod(nameof(TryFetchWaterVector3Mod.Prefix));
-            harmony.Patch(original, new HarmonyMethod(prefix), new HarmonyMethod(postfix));
-
-            original = typeof(WaterManager).GetMethod("TryFetchWater", new Type[] { typeof(ushort), typeof(int), typeof(int), typeof(byte).MakeByRefType() });
-            prefix = typeof(TryFetchWaterUshortMod).GetMethod(nameof(TryFetchWaterUshortMod.Prefix));
-            harmony.Patch(original, new HarmonyMethod(prefix), new HarmonyMethod(postfix));
         }
 
         public void OnReleased()
         {
-
+            if (HarmonyHelper.IsHarmonyInstalled) Patcher.UnpatchAll();
         }
 
         public void OnLevelLoaded(LoadMode mode)
