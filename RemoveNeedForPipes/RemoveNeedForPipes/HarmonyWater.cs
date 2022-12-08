@@ -109,12 +109,12 @@ namespace RemoveNeedForPipes
     }
 
     //Buildings
-    //[HarmonyPatch(typeof(WaterManager))]
-    //[HarmonyPatch(nameof(WaterManager.TryFetchWater))]
-    //[HarmonyPatch(new Type[] { typeof(Vector3), typeof(int), typeof(int), typeof(byte) })]
+    [HarmonyPatch(typeof(WaterManager))]
+    [HarmonyPatch(nameof(WaterManager.TryFetchWater))]
+    [HarmonyPatch(new Type[] { typeof(Vector3), typeof(int), typeof(int), typeof(byte) }, new ArgumentType[] { ArgumentType.Normal, ArgumentType.Normal, ArgumentType.Normal, ArgumentType.Ref })]
     public class TryFetchWaterVector3Mod
     {
-        public static bool Prefix(int rate, int max, ref byte waterPollution, ref int __result)
+        public static bool Prefix(Vector3 pos, int rate, int max, ref byte waterPollution, ref int __result)
         {
             __result = WaterManagerMod.FetchWater(Math.Min(rate, max), ref waterPollution);
 
@@ -123,9 +123,9 @@ namespace RemoveNeedForPipes
     }
 
     //Water reservouir and Water outtake
-    //[HarmonyPatch(typeof(WaterManager))]
-    //[HarmonyPatch(nameof(WaterManager.TryFetchWater))]
-    //[HarmonyPatch(new Type[] { typeof(ushort), typeof(int), typeof(int), typeof(byte) })]
+    [HarmonyPatch(typeof(WaterManager))]
+    [HarmonyPatch(nameof(WaterManager.TryFetchWater))]
+    [HarmonyPatch(new Type[] { typeof(ushort), typeof(int), typeof(int), typeof(byte) }, new ArgumentType[] { ArgumentType.Normal, ArgumentType.Normal, ArgumentType.Normal, ArgumentType.Ref })]
     public class TryFetchWaterUshortMod
     {
         public static bool Prefix(int rate, int max, ref byte waterPollution, ref int __result)
